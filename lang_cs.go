@@ -2,11 +2,6 @@
 
 package goversioninfo
 
-import (
-	"encoding/json"
-	"strconv"
-)
-
 // CharsetID must use be a character-set identifier from:
 // https://msdn.microsoft.com/en-us/library/windows/desktop/aa381058(v=vs.85).aspx#charsetID
 type CharsetID uint16
@@ -28,58 +23,14 @@ const (
 )
 
 // UnmarshalJSON converts the string to a CharsetID
-func (cs *CharsetID) UnmarshalJSON(p []byte) error {
-	if len(p) == 0 {
-		return nil
-	}
-	if p[0] != '"' {
-		var u uint16
-		if err := json.Unmarshal(p, &u); err != nil {
-			return err
-		}
-		*cs = CharsetID(u)
-		return nil
-	}
-	var s string
-	if err := json.Unmarshal(p, &s); err != nil {
-		return err
-	}
-	u, err := strconv.ParseUint(s, 16, 16)
-	if err != nil {
-		return err
-	}
-	*cs = CharsetID(u)
-	return nil
-}
+func (cs *CharsetID) UnmarshalJSON(p []byte) error { _ = "STUB: not implemented"; return nil }
 
 // LangID must use be a character-set identifier from:
 // https://msdn.microsoft.com/en-us/library/windows/desktop/aa381058(v=vs.85).aspx#langID
 type LangID uint16
 
 // UnmarshalJSON converts the string to a LangID
-func (lng *LangID) UnmarshalJSON(p []byte) error {
-	if len(p) == 0 {
-		return nil
-	}
-	if p[0] != '"' {
-		var u uint16
-		if err := json.Unmarshal(p, &u); err != nil {
-			return err
-		}
-		*lng = LangID(u)
-		return nil
-	}
-	var s string
-	if err := json.Unmarshal(p, &s); err != nil {
-		return err
-	}
-	u, err := strconv.ParseUint(s, 16, 16)
-	if err != nil {
-		return err
-	}
-	*lng = LangID(u)
-	return nil
-}
+func (lng *LangID) UnmarshalJSON(p []byte) error { _ = "STUB: not implemented"; return nil }
 
 // LangID constants
 const (

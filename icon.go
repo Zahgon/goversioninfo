@@ -2,10 +2,7 @@ package goversioninfo
 
 import (
 	"bytes"
-	"encoding/binary"
-	"fmt"
 	"os"
-	"strings"
 
 	"github.com/akavel/rsrc/coff"
 	"github.com/akavel/rsrc/ico"
@@ -51,9 +48,7 @@ type gRPICONDIR struct {
 	Entries []gRPICONDIRENTRY
 }
 
-func (group gRPICONDIR) Size() int64 {
-	return int64(binary.Size(group.ICONDIR) + len(group.Entries)*binary.Size(group.Entries[0]))
-}
+func (group gRPICONDIR) Size() int64 { _ = "STUB: not implemented"; return 0 }
 
 type gRPICONDIRENTRY struct {
 	ico.IconDirEntryCommon
@@ -61,72 +56,31 @@ type gRPICONDIRENTRY struct {
 }
 
 func addIcon(coff *coff.Coff, fnames string, newID func() uint16) error {
-	for {
-		var fname1 string
-		var ok bool
-		fname1, fnames, ok = strings.Cut(fnames, ",")
-		if fname1 != "" {
-			if err := addOneIcon(coff, fname1, newID); err != nil {
-				return fmt.Errorf("%s: %w", fname1, err)
-			}
-		}
-		if !ok {
-			return nil
-		}
-	}
-}
-
-func addOneIcon(coff *coff.Coff, fname string, newID func() uint16) error {
-	return addOneIconWithGroupID(coff, fname, newID, 0)
-}
-
-func addIconWithGroupID(coff *coff.Coff, fname string, newID func() uint16, groupID uint16) error {
-	return addOneIconWithGroupID(coff, fname, newID, groupID)
-}
-
-func addOneIconWithGroupID(coff *coff.Coff, fname string, newID func() uint16, groupID uint16) error {
-	f, err := os.Open(fname)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	icons, err := ico.DecodeHeaders(f)
-	if err != nil {
-		return err
-	}
-
-	if len(icons) > 0 {
-		// RT_ICONs
-		group := gRPICONDIR{ICONDIR: ico.ICONDIR{
-			Reserved: 0, // magic num.
-			Type:     1, // magic num.
-			Count:    uint16(len(icons)),
-		}}
-		gid := groupID
-		if gid == 0 {
-			gid = newID()
-		}
-		for _, icon := range icons {
-			id := newID()
-			buff, err := bufferIcon(f, int64(icon.ImageOffset), int(icon.BytesInRes))
-			if err != nil {
-				return err
-			}
-			coff.AddResource(rtIcon, id, buff)
-			group.Entries = append(group.Entries, gRPICONDIRENTRY{IconDirEntryCommon: icon.IconDirEntryCommon, ID: id})
-		}
-		coff.AddResource(rtGroupIcon, gid, group)
-	}
-
+	_ = "STUB: not implemented"
 	return nil
 }
 
+func addOneIcon(coff *coff.Coff, fname string, newID func() uint16) error {
+	_ = "STUB: not implemented"
+	return nil
+}
+
+func addIconWithGroupID(coff *coff.Coff, fname string, newID func() uint16, groupID uint16) error {
+	_ = "STUB: not implemented"
+	return nil
+}
+
+func addOneIconWithGroupID(coff *coff.Coff, fname string, newID func() uint16, groupID uint16) error {
+	_ = "STUB: not implemented"
+	return nil
+}
+
+// RT_ICONs
+
+// magic num.
+// magic num.
+
 func bufferIcon(f *os.File, offset int64, size int) (*bytes.Reader, error) {
-	data := make([]byte, size)
-	_, err := f.ReadAt(data, offset)
-	if err != nil {
-		return nil, err
-	}
-	return bytes.NewReader(data), nil
+	_ = "STUB: not implemented"
+	return nil, nil
 }

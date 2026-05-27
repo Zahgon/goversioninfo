@@ -3,19 +3,8 @@ package goversioninfo
 
 import (
 	"bytes"
-	"encoding/binary"
-	"encoding/json"
-	"fmt"
 	"io"
-	"log"
-	"os"
-	"reflect"
-	"regexp"
-	"strconv"
-	"strings"
-	"unicode/utf16"
 
-	"github.com/akavel/rsrc/binutil"
 	"github.com/akavel/rsrc/coff"
 )
 
@@ -24,18 +13,16 @@ import (
 // *****************************************************************************
 
 // ParseJSON parses the given bytes as a VersionInfo JSON.
-func (vi *VersionInfo) ParseJSON(jsonBytes []byte) error {
-	return json.Unmarshal([]byte(jsonBytes), &vi)
-}
+func (vi *VersionInfo) ParseJSON(jsonBytes []byte) error { _ = "STUB: not implemented"; return nil }
 
 // VersionInfo data container
 type VersionInfo struct {
-	FixedFileInfo  `json:"FixedFileInfo"`
-	StringFileInfo `json:"StringFileInfo"`
-	VarFileInfo    `json:"VarFileInfo"`
-	Timestamp      bool
-	Buffer         bytes.Buffer
-	Structure      VSVersionInfo
+	FixedFileInfo       `json:"FixedFileInfo"`
+	StringFileInfo      `json:"StringFileInfo"`
+	VarFileInfo         `json:"VarFileInfo"`
+	Timestamp           bool
+	Buffer              bytes.Buffer
+	Structure           VSVersionInfo
 	IconPath            string `json:"IconPath"`
 	ManifestPath        string `json:"ManifestPath"`
 	ApplicationIconPath string `json:"ApplicationIconPath"`
@@ -97,139 +84,46 @@ type SizedReader struct {
 }
 
 // Size returns the length of the buffer.
-func (s SizedReader) Size() int64 {
-	return int64(s.Buffer.Len())
-}
+func (s SizedReader) Size() int64 { _ = "STUB: not implemented"; return 0 }
 
-func str2Uint32(s string) uint32 {
-	if s == "" {
-		return 0
-	}
-	u, err := strconv.ParseUint(s, 16, 32)
-	if err != nil {
-		log.Printf("Error parsing %q as uint32: %v", s, err)
-		return 0
-	}
+func str2Uint32(s string) uint32 { _ = "STUB: not implemented"; return 0 }
 
-	return uint32(u)
-}
+func padString(s string, zeros int) []byte { _ = "STUB: not implemented"; return nil }
 
-func padString(s string, zeros int) []byte {
-	u16 := utf16.Encode([]rune(s))
-	b := make([]byte, 0, len(u16)*2+zeros)
-	for _, v := range u16 {
-		b = binary.LittleEndian.AppendUint16(b, v)
-	}
-
-	for i := 0; i < zeros; i++ {
-		b = append(b, 0x00)
-	}
-
-	return b
-}
-
-func padBytes(i int) []byte {
-	return make([]byte, i)
-}
+func padBytes(i int) []byte { _ = "STUB: not implemented"; return nil }
 
 // NewFileVersion parses semver version string into a FileVersion object
 func NewFileVersion(version string) (FileVersion, error) {
-	re := regexp.MustCompile(`^(\d+)\.(\d+)\.(\d+)(?:\.(\d+))?`)
-
-	comps := re.FindStringSubmatch(version)
-	if len(comps) == 0 {
-		return FileVersion{}, fmt.Errorf("version expected to start from x.y.z")
-	}
-
-	// First match group is a whole matched string.
-	comps = comps[1:]
-	if comps[3] == "" {
-		comps = comps[:3]
-	}
-
-	nums := make([]int, len(comps))
-	for i := range nums {
-		n, err := strconv.Atoi(comps[i])
-		if err != nil {
-			return FileVersion{}, fmt.Errorf("%s: %s", comps[i], err)
-		}
-		nums[i] = n
-	}
-
-	res := FileVersion{
-		Major: nums[0],
-		Minor: nums[1],
-		Patch: nums[2],
-	}
-	if len(nums) == 4 {
-		res.Build = nums[3]
-	}
-	return res, nil
+	_ = "STUB: not implemented"
+	return *new(FileVersion), nil
 }
 
-func (f FileVersion) getVersionHighString() string {
-	return fmt.Sprintf("%04x%04x", f.Major, f.Minor)
-}
+// First match group is a whole matched string.
 
-func (f FileVersion) getVersionLowString() string {
-	return fmt.Sprintf("%04x%04x", f.Patch, f.Build)
-}
+func (f FileVersion) getVersionHighString() string { _ = "STUB: not implemented"; return "" }
+
+func (f FileVersion) getVersionLowString() string { _ = "STUB: not implemented"; return "" }
 
 // IsZero returns true if all version components are zero.
-func (f FileVersion) IsZero() bool {
-	return f.Major == 0 && f.Minor == 0 && f.Patch == 0 && f.Build == 0
-}
+func (f FileVersion) IsZero() bool { _ = "STUB: not implemented"; return false }
 
 // GetVersionString returns a string representation of the version
-func (f FileVersion) GetVersionString() string {
-	return fmt.Sprintf("%d.%d.%d.%d", f.Major, f.Minor, f.Patch, f.Build)
-}
+func (f FileVersion) GetVersionString() string { _ = "STUB: not implemented"; return "" }
 
 // fillVersions syncs version info between FixedFileInfo and StringFileInfo.
 // If one section has version data and the other doesn't, the missing section
 // is populated automatically. Warnings are logged when StringFileInfo version
 // strings cannot be parsed or when the two sections have conflicting values.
-func (vi *VersionInfo) fillVersions() {
-	vi.fillVersion("FileVersion",
-		&vi.FixedFileInfo.FileVersion, &vi.StringFileInfo.FileVersion)
-	vi.fillVersion("ProductVersion",
-		&vi.FixedFileInfo.ProductVersion, &vi.StringFileInfo.ProductVersion)
-}
+func (vi *VersionInfo) fillVersions() { _ = "STUB: not implemented"; return }
 
 func (vi *VersionInfo) fillVersion(name string, fixed *FileVersion, str *string) {
-	fixedZero := fixed.IsZero()
-	strEmpty := *str == ""
-
-	switch {
-	case !fixedZero && strEmpty:
-		*str = fixed.GetVersionString()
-	case fixedZero && !strEmpty:
-		v, err := NewFileVersion(*str)
-		if err != nil {
-			log.Printf("Warning: StringFileInfo.%s %q could not be parsed: %v", name, *str, err)
-			return
-		}
-		*fixed = v
-	case !fixedZero && !strEmpty:
-		v, err := NewFileVersion(*str)
-		if err != nil {
-			log.Printf("Warning: StringFileInfo.%s %q could not be parsed: %v", name, *str, err)
-			return
-		}
-		if *fixed != v {
-			log.Printf("Warning: FixedFileInfo.%s (%s) and StringFileInfo.%s (%s) do not match",
-				name, fixed.GetVersionString(), name, *str)
-		}
-	}
+	_ = "STUB: not implemented"
+	return
 }
 
-func (t Translation) getTranslationString() string {
-	return fmt.Sprintf("%04X%04X", t.LangID, t.CharsetID)
-}
+func (t Translation) getTranslationString() string { _ = "STUB: not implemented"; return "" }
 
-func (t Translation) getTranslation() string {
-	return fmt.Sprintf("%04x%04x", t.CharsetID, t.LangID)
-}
+func (t Translation) getTranslation() string { _ = "STUB: not implemented"; return "" }
 
 // *****************************************************************************
 // IO Methods
@@ -237,177 +131,47 @@ func (t Translation) getTranslation() string {
 
 // Walk writes the data buffer with hexadecimal data from the structs
 func (vi *VersionInfo) Walk() {
+	_ = "STUB: not implemented"
 	// Create a buffer
-	var b bytes.Buffer
-	w := binutil.Writer{W: &b}
-
-	// Write to the buffer
-	binutil.Walk(vi.Structure, func(v reflect.Value, path string) error {
-		if binutil.Plain(v.Kind()) {
-			w.WriteLE(v.Interface())
-		}
-		return nil
-	})
-
-	vi.Buffer = b
+	return
 }
+
+// Write to the buffer
 
 // WriteSyso creates a resource file from the version info and optionally an icon.
 // arch must be an architecture string accepted by coff.Arch, like "386" or "amd64"
 func (vi *VersionInfo) WriteSyso(filename string, arch string) error {
-
-	var i uint16
-	newID := func() uint16 {
-		i++
-		return i
-	}
-
-	// Create a new RSRC section
-	rsrc := coff.NewRSRC()
-
-	// Set the architecture
-	err := rsrc.Arch(arch)
-	if err != nil {
-		return err
-	}
-
-	// ID 16 is for Version Information
-	rsrc.AddResource(16, 1, SizedReader{bytes.NewBuffer(vi.Buffer.Bytes())})
-
-	// If manifest is enabled
-	if vi.ManifestPath != "" {
-
-		manifest, err := binutil.SizedOpen(vi.ManifestPath)
-		if err != nil {
-			return err
-		}
-		defer manifest.Close()
-
-		id := newID()
-		rsrc.AddResource(rtManifest, id, manifest)
-	}
-
-	// If icon is enabled
-	if vi.IconPath != "" {
-		if err := addIcon(rsrc, vi.IconPath, newID); err != nil {
-			return err
-		}
-	}
-
-	// IDI_APPLICATION (32512) is the icon shown in the window title bar.
-	// Default to IconPath if not explicitly set.
-	appIcon := vi.ApplicationIconPath
-	if appIcon == "" {
-		appIcon = vi.IconPath
-	}
-	if appIcon != "" {
-		if err := addIconWithGroupID(rsrc, appIcon, newID, 32512); err != nil {
-			return err
-		}
-	}
-
-	rsrc.Freeze()
-
-	// Write to file
-	return writeCoff(rsrc, filename)
+	_ = "STUB: not implemented"
+	return nil
 }
+
+// Create a new RSRC section
+
+// Set the architecture
+
+// ID 16 is for Version Information
+
+// If manifest is enabled
+
+// If icon is enabled
+
+// IDI_APPLICATION (32512) is the icon shown in the window title bar.
+// Default to IconPath if not explicitly set.
+
+// Write to file
 
 // WriteHex creates a hex file for debugging version info
-func (vi *VersionInfo) WriteHex(filename string) error {
-	return os.WriteFile(filename, vi.Buffer.Bytes(), 0655)
-}
+func (vi *VersionInfo) WriteHex(filename string) error { _ = "STUB: not implemented"; return nil }
 
 // WriteGo creates a Go file that contains the version info so you can access
 // it in the application
 func (vi *VersionInfo) WriteGo(filename, packageName string) error {
-	if len(packageName) == 0 {
-		packageName = "main"
-	}
-
-	out, err := os.Create(filename)
-	if err != nil {
-		return err
-	}
-
-	ffib, err := json.MarshalIndent(vi.FixedFileInfo, "\t", "\t")
-	if err != nil {
-		return err
-	}
-
-	sfib, err := json.MarshalIndent(vi.StringFileInfo, "\t", "\t")
-	if err != nil {
-		return err
-	}
-
-	vfib, err := json.MarshalIndent(vi.VarFileInfo, "\t", "\t")
-	if err != nil {
-		return err
-	}
-
-	replace := "`\" + \"`\" + \"`"
-	str := "`{\n\t"
-	str += `"FixedFileInfo":`
-	str += strings.Replace(string(ffib), "`", replace, -1)
-	str += ",\n\t"
-	str += `"StringFileInfo":`
-	str += strings.Replace(string(sfib), "`", replace, -1)
-	str += ",\n\t"
-	str += `"VarFileInfo":`
-	str += strings.Replace(string(vfib), "`", replace, -1)
-	str += "\n"
-	str += "}`"
-	fmt.Fprintf(out, `// Auto-generated file by goversioninfo. Do not edit.
-package %v
-
-import (
-	"encoding/json"
-
-	"github.com/josephspurrier/goversioninfo"
-)
-
-func unmarshalGoVersionInfo(b []byte) goversioninfo.VersionInfo {
-	vi := goversioninfo.VersionInfo{}
-	json.Unmarshal(b, &vi)
-	return vi
-}
-
-var versionInfo = unmarshalGoVersionInfo([]byte(%v))
-`, packageName, string(str))
-
+	_ = "STUB: not implemented"
 	return nil
 }
 
-func writeCoff(coff *coff.Coff, fnameout string) error {
-	out, err := os.Create(fnameout)
-	if err != nil {
-		return err
-	}
-	if err = writeCoffTo(out, coff); err != nil {
-		return fmt.Errorf("error writing %q: %v", fnameout, err)
-	}
-	return nil
-}
+func writeCoff(coff *coff.Coff, fnameout string) error { _ = "STUB: not implemented"; return nil }
 
-func writeCoffTo(w io.WriteCloser, coff *coff.Coff) error {
-	bw := binutil.Writer{W: w}
+func writeCoffTo(w io.WriteCloser, coff *coff.Coff) error { _ = "STUB: not implemented"; return nil }
 
-	// write the resulting file to disk
-	binutil.Walk(coff, func(v reflect.Value, path string) error {
-		if binutil.Plain(v.Kind()) {
-			bw.WriteLE(v.Interface())
-			return nil
-		}
-		vv, ok := v.Interface().(binutil.SizedReader)
-		if ok {
-			bw.WriteFromSized(vv)
-			return binutil.WALK_SKIP
-		}
-		return nil
-	})
-
-	err := bw.Err
-	if closeErr := w.Close(); closeErr != nil && err == nil {
-		err = closeErr
-	}
-	return err
-}
+// write the resulting file to disk
